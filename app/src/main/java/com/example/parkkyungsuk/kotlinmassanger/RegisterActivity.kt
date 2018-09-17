@@ -2,9 +2,11 @@ package com.example.parkkyungsuk.kotlinmassanger
 
 import android.app.Activity
 import android.content.Intent
+import android.media.MediaDataSource
 import android.net.Uri
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
@@ -42,6 +44,7 @@ class RegisterActivity : AppCompatActivity() {
         }
     }
 
+    //写真が選択された後のDelegate
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
@@ -50,6 +53,10 @@ class RegisterActivity : AppCompatActivity() {
             Log.d("RegisterActivity","Photo was Selected")
 
             seletedPhotoUri = data.data
+
+            val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, seletedPhotoUri)
+            selected_photo_imageview_register.setImageBitmap(bitmap)
+            selectPhoto_button_register.alpha = 0f
         }
     }
 
