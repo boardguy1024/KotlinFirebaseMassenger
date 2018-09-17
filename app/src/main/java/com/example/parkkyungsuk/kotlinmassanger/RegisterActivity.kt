@@ -110,15 +110,21 @@ class RegisterActivity : AppCompatActivity() {
                 }
     }
 
+    //DataBaseに追加
     private fun saveUserToDatabase(profileImageUrl: String) {
         val uid = FirebaseAuth.getInstance().uid ?: ""
         val ref = FirebaseDatabase.getInstance().getReference("/users/${uid}")
 
         val user = User(uid, username_editText_registraion_screen.text.toString(), profileImageUrl)
 
+        //追加
         ref.setValue(user)
                 .addOnSuccessListener {
                     Log.d("Register","Finally we saved the user to FirebaseDatabse!")
+
+                    val intent = Intent(this, LatestActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                    startActivity(intent)
                 }
     }
 }
