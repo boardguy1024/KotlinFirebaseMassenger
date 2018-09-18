@@ -1,5 +1,6 @@
 package com.example.parkkyungsuk.kotlinmassanger
 
+import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v7.widget.RecyclerView
@@ -41,13 +42,19 @@ class NewMessageActivity : AppCompatActivity() {
                     Log.d("NewMessage", it.toString())
                     val user = it.getValue(User::class.java)
                     if (user != null) {
-                        adaptor.add(UserItem(user!!))
+                        adaptor.add(UserItem(user))
                     }
                 }
 
+                // Go User Chat Activity
+                adaptor.setOnItemClickListener { item, view ->
+                    val intent = Intent(view.context, ChatLogActivity::class.java)
+                    startActivity(intent)
+
+                    finish()
+                }
+
                 recyclerview_new_message.adapter = adaptor
-
-
             }
 
             override fun onCancelled(p0: DatabaseError) {
