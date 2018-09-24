@@ -15,8 +15,8 @@ class ChatLogActivity : AppCompatActivity() {
         setContentView(R.layout.activity_chat_log)
        // supportActionBar?.title = "Chat Log"
 
-        val username = intent.getStringExtra(NewMessageActivity.USER_KEY)
-        supportActionBar?.title = username
+        val user = intent.getParcelableExtra<User>(NewMessageActivity.USER_KEY)
+        supportActionBar?.title = user.username
 
         val adaptor = GroupAdapter<ViewHolder>()
 
