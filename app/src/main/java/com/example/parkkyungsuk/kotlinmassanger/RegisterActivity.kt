@@ -35,7 +35,11 @@ class RegisterActivity : AppCompatActivity() {
 
         registerButton_register.setOnClickListener {
 
-           performRegister()
+            //TODO: 削除予定
+            val intent = Intent(this, LatestActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+            startActivity(intent)
+          // performRegister()
         }
 
         already_have_account_textView.setOnClickListener {

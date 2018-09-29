@@ -5,6 +5,9 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.ChildEventListener
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Item
@@ -19,6 +22,8 @@ class ChatLogActivity : AppCompatActivity() {
         val TAG = "ChatLog"
     }
 
+    var adaptor = GroupAdapter<ViewHolder>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat_log)
@@ -26,11 +31,49 @@ class ChatLogActivity : AppCompatActivity() {
         val user = intent.getParcelableExtra<User>(NewMessageActivity.USER_KEY)
         supportActionBar?.title = user.username
 
-        setDummyData()
+        listenForMessages()
 
         send_button_chatlog.setOnClickListener {
             performSendMessage()
         }
+    }
+    private fun listenForMessages() {
+        val ref = FirebaseDatabase.getInstance().getReference("/messages")
+
+        ref.addChildEventListener(object: ChildEventListener {
+
+            override fun onChildAdded(p0: DataSnapshot, p1: String?) {
+                val chatMessage = p0.getValue(ChatMassage::class.java)
+
+                if (chatMessage != null) {
+                    Log.d(TAG, chatMessage.text)
+
+                    if (chatMessage.fromId == FirebaseAuth.getInstance().uid) {
+                        adaptor.add(ChatFromItem(chatMessage.text))
+                    } else {
+                        adaptor.add(ChatToItem(chatMessage.text))
+                    }
+                }
+
+                recyclerview_chat_log.adapter = adaptor
+            }
+
+            override fun onCancelled(p0: DatabaseError) {
+                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            }
+
+            override fun onChildChanged(p0: DataSnapshot, p1: String?) {
+                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            }
+
+            override fun onChildMoved(p0: DataSnapshot, p1: String?) {
+                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            }
+
+            override fun onChildRemoved(p0: DataSnapshot) {
+                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            }
+        })
     }
 
     private fun performSendMessage() {
@@ -45,28 +88,20 @@ class ChatLogActivity : AppCompatActivity() {
 
         if (fromId == null) return
 
-
+        // chatMassageオブジェクトをFirebaseのmessagesに保持
         val chatMassage = ChatMassage(text, ref.key!!, fromId, toId, System.currentTimeMillis() / 1000)
 
         ref.setValue(chatMassage)
                 .addOnSuccessListener {
                     Log.d(TAG, "Saved our chat message: ${ref.key}")
                 }
-
-
     }
 
-    private fun setDummyData() {
-        val adaptor = GroupAdapter<ViewHolder>()
-
-        adaptor.add(ChatFromItem("FromText!!!"))
-        adaptor.add(ChatToItem("ToText!!!") )
-
-        recyclerview_chat_log.adapter = adaptor
-    }
 }
 
-class ChatMassage(val text: String, val id: String, val fromId: String, val toId: String, val timeStamp: Long)
+class ChatMassage(val text: String, val id: String, val fromId: String, val toId: String, val timeStamp: Long) {
+   constructor(): this("","","","",-1)
+}
 
 class ChatFromItem(val text: String): Item<ViewHolder>() {
 
