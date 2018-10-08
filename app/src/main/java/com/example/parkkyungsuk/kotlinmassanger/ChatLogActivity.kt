@@ -13,6 +13,7 @@ import com.squareup.picasso.Picasso
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
+import kotlinx.android.synthetic.main.abc_alert_dialog_material.*
 import kotlinx.android.synthetic.main.activity_chat_log.*
 import kotlinx.android.synthetic.main.chat_from_row.view.*
 import kotlinx.android.synthetic.main.chat_to_row.view.*
@@ -41,7 +42,11 @@ class ChatLogActivity : AppCompatActivity() {
         }
     }
     private fun listenForMessages() {
-        val ref = FirebaseDatabase.getInstance().getReference("/messages")
+
+        val fromId = FirebaseAuth.getInstance().uid
+        val toId = toUser?.uid
+
+        val ref = FirebaseDatabase.getInstance().getReference("/user-messages/$fromId/$toId")
 
         ref.addChildEventListener(object: ChildEventListener {
 
@@ -88,8 +93,9 @@ class ChatLogActivity : AppCompatActivity() {
         val user = intent.getParcelableExtra<User>(NewMessageActivity.USER_KEY)
         val toId = user.uid
 
-        val ref = FirebaseDatabase.getInstance().getReference("/messages").push()
-
+        //val ref = FirebaseDatabase.getInstance().getReference("/messages").push()
+        val ref = FirebaseDatabase.getInstance().getReference("/user-messages/$fromId/$toId").push()
+        val toRef = FirebaseDatabase.getInstance().getReference("/user-messages/$toId/$fromId").push()
         if (fromId == null) return
 
         // chatMassageオブジェクトをFirebaseのmessagesに保持
@@ -98,7 +104,12 @@ class ChatLogActivity : AppCompatActivity() {
         ref.setValue(chatMassage)
                 .addOnSuccessListener {
                     Log.d(TAG, "Saved our chat message: ${ref.key}")
+
+                    editText_chatlog.text.clear()
+                    //最新メッセージまでにスクロールさせる
+                    recyclerview_chat_log.scrollToPosition(adaptor.itemCount - 1)
                 }
+        toRef.setValue(chatMassage)
     }
 
 }
