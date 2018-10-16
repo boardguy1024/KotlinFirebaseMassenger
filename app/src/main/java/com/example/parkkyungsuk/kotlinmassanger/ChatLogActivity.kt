@@ -110,6 +110,12 @@ class ChatLogActivity : AppCompatActivity() {
                     recyclerview_chat_log.scrollToPosition(adaptor.itemCount - 1)
                 }
         toRef.setValue(chatMassage)
+
+        val letestMessageRef = FirebaseDatabase.getInstance().getReference("/latest-messages/$fromId/$toId")
+        letestMessageRef.setValue(chatMassage)
+
+        val letestMessageToRef = FirebaseDatabase.getInstance().getReference("/latest-messages/$toId/$fromId")
+        letestMessageRef.setValue(chatMassage)
     }
 
 }
