@@ -22,6 +22,8 @@ class LatestActivity : AppCompatActivity() {
         var currentUser: User? = null
     }
 
+    val latestMassageMap = HashMap<String, ChatMassage>()
+
     val adapter = GroupAdapter<ViewHolder>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,6 +42,13 @@ class LatestActivity : AppCompatActivity() {
 
     }
 
+    private fun refreshRecyclerViewMessages() {
+        adapter.clear()
+        latestMassageMap.values.forEach {
+            adapter.add(LatestMessageRow(it))
+        }
+    }
+
     private fun listenForLatestMessages() {
         val fromId = FirebaseAuth.getInstance().uid
 
@@ -49,14 +58,14 @@ class LatestActivity : AppCompatActivity() {
             override fun onChildAdded(p0: DataSnapshot, p1: String?) {
 
                 val chatMassage = p0.getValue(ChatMassage::class.java) ?: return
-
-                adapter.add(LatestMessageRow(chatMassage))
+                latestMassageMap[p0.key!!] = chatMassage
+                refreshRecyclerViewMessages()
             }
 
             override fun onChildChanged(p0: DataSnapshot, p1: String?) {
                 val chatMassage = p0.getValue(ChatMassage::class.java) ?: return
-
-                adapter.add(LatestMessageRow(chatMassage))
+                latestMassageMap[p0.key!!] = chatMassage
+                refreshRecyclerViewMessages()
             }
 
             override fun onCancelled(p0: DatabaseError) {
