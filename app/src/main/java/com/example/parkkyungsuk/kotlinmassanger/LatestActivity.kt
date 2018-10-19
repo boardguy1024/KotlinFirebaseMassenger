@@ -4,6 +4,7 @@ import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v4.content.IntentCompat
+import android.support.v7.widget.DividerItemDecoration
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -31,6 +32,8 @@ class LatestActivity : AppCompatActivity() {
         setContentView(R.layout.activity_latest)
 
         recyclerview_latest_activity.adapter = adapter
+        //下線を引く
+        recyclerview_latest_activity.addItemDecoration(DividerItemDecoration(this, DividerItemDecoration.VERTICAL))
 
         //setupDummyData()
         listenForLatestMessages()
@@ -87,12 +90,21 @@ class LatestActivity : AppCompatActivity() {
         override fun bind(viewHolder: ViewHolder, position: Int) {
             viewHolder.itemView.message_textView_latest_messages.text = chatMassage.text
 
-            val toUser = FirebaseDatabase.getInstance().getReference("/users/${chatMassage.toId}")
+            val chatParterId: String
+            if (chatMassage.fromId == FirebaseAuth.getInstance().uid) {
+                chatParterId = chatMassage.toId
+            }
+            else {
+                chatParterId = chatMassage.fromId
+            }
+
+            val toUser = FirebaseDatabase.getInstance().getReference("/users/$chatParterId")
             toUser.addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(p0: DataSnapshot) {
-                   val toUser = p0.getValue(User::class.java)
-                    viewHolder.itemView.username_textView_latest_messages.text = toUser?.username
-                    val uri = toUser?.profileImageUrl
+
+                   val user = p0.getValue(User::class.java)
+                    viewHolder.itemView.username_textView_latest_messages.text = user?.username
+                    val uri = user?.profileImageUrl
                     Picasso.get().load(uri).into(viewHolder.itemView.imageView_latest_messages)
                 }
 
