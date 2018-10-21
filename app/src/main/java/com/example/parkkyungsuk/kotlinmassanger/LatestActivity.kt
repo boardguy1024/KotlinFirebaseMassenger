@@ -1,6 +1,7 @@
 package com.example.parkkyungsuk.kotlinmassanger
 
 import android.content.Intent
+import android.nfc.Tag
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v4.content.IntentCompat
@@ -21,6 +22,7 @@ class LatestActivity : AppCompatActivity() {
 
     companion object {
         var currentUser: User? = null
+        val TAG = "LatestMessages"
     }
 
     val latestMassageMap = HashMap<String, ChatMassage>()
@@ -41,6 +43,19 @@ class LatestActivity : AppCompatActivity() {
         fetchCurrentUser()
 
         verifyUserIsLoggedIn()
+
+        // クリックしたセルのToUserをitemから参照できるようにLatestMessageRowにchatPartnerUserを追加しておいた
+        //ChatMessageRow画面を表示させるためにはIntentにChatPartnerIdを渡す必要がある
+
+        adapter.setOnItemClickListener { item, view ->
+            Log.d(TAG, "123")
+            val intent = Intent(this, ChatLogActivity::class.java)
+
+            val row = item as LatestMessageRow
+            intent.putExtra(NewMessageActivity.USER_KEY, row.chatPartnerUSer)
+
+            startActivity(intent)
+        }
 
 
     }
@@ -83,42 +98,6 @@ class LatestActivity : AppCompatActivity() {
                 TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
             }
         })
-    }
-
-    class LatestMessageRow(val chatMassage: ChatMassage) : Item<ViewHolder>() {
-
-        override fun bind(viewHolder: ViewHolder, position: Int) {
-            viewHolder.itemView.message_textView_latest_messages.text = chatMassage.text
-
-            val chatParterId: String
-            if (chatMassage.fromId == FirebaseAuth.getInstance().uid) {
-                chatParterId = chatMassage.toId
-            }
-            else {
-                chatParterId = chatMassage.fromId
-            }
-
-            val toUser = FirebaseDatabase.getInstance().getReference("/users/$chatParterId")
-            toUser.addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(p0: DataSnapshot) {
-
-                   val user = p0.getValue(User::class.java)
-                    viewHolder.itemView.username_textView_latest_messages.text = user?.username
-                    val uri = user?.profileImageUrl
-                    Picasso.get().load(uri).into(viewHolder.itemView.imageView_latest_messages)
-                }
-
-                override fun onCancelled(p0: DatabaseError) {
-                    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-                }
-            })
-
-        }
-        override fun getLayout(): Int {
-            return R.layout.latest_messages_row
-        }
-
-
     }
 
     private fun fetchCurrentUser() {
